@@ -85,18 +85,24 @@
 
                 </LinearLayout>
 
-                <ImageButton
+                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/share_fab"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginRight="@dimen/fab_margin"
-                    android:layout_marginTop="-40dp"
-                    android:background="@drawable/add_fab_background"
-                    android:contentDescription="@string/action_share"
-                    android:elevation="@dimen/fab_elevation"
                     android:src="@drawable/ic_share"
-                    android:stateListAnimator="@anim/fab_state_list_anim" />
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/fab_margin"
+                    android:layout_marginTop="-40dp"
+
+                    app:fabSize="normal"
+                    android:elevation="@dimen/fab_elevation"
+                    app:pressedTranslationZ="@dimen/fab_press_translation_z"
+                    android:layout_gravity="top|end"
+
+
+                    android:contentDescription="@string/action_share"
+                    android:stateListAnimator="@anim/fab_state_list_anim"
+                />
 
                 <TextView
                     android:id="@+id/article_body"

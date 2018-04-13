@@ -1,6 +1,12 @@
 package com.example.xyzreader.ui;
 
+import android.content.Context;
+import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.content.Intent;
 import android.support.v4.content.Loader;
@@ -54,10 +60,37 @@ public class ArticleListActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
 
+        if (!isConnectedToInternet()) {
+            Snackbar.make(findViewById(R.id.nested_scroll_view),
+                    "No connection to the internet!", Snackbar.LENGTH_LONG).show();
+        }
+
         mRecyclerView = findViewById(R.id.recycler_view);
         getSupportLoaderManager().initLoader(0, null, this);
 
         setToolbarTitleWhenCollapsed();
+    }
+
+    /**
+     * Code from: https://stackoverflow.com/a/4239019
+     *
+     * @return  TRUE if there is access to the internet, otherwise FALSE.
+     */
+    private boolean isConnectedToInternet() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        int newColumnCount = getResources().getInteger(R.integer.list_column_count);
+
+        GridLayoutManager layoutManager = (GridLayoutManager) mRecyclerView.getLayoutManager();
+        layoutManager.setSpanCount(newColumnCount);
     }
 
     /**
@@ -137,14 +170,12 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
-        private boolean isOfCards = false;
 
         ReaderAdapterClickListener mListener;
 
         Adapter(Cursor cursor, ReaderAdapterClickListener listener) {
             mCursor = cursor;
             mListener = listener;
-            isOfCards = getResources().getBoolean(R.bool.detail_is_card);
         }
 
         @Override
@@ -155,7 +186,11 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
+            int layoutId = R.layout.list_item_article;
+            if (getResources().getBoolean(R.bool.detail_is_card)) {
+                layoutId = R.layout.list_item_article_card;
+            }
+            View view = getLayoutInflater().inflate(layoutId, parent, false);
             return new ViewHolder(view);
         }
 
@@ -198,13 +233,23 @@ public class ArticleListActivity extends AppCompatActivity implements
             final String transitionName = holder.titleView.getText().toString().replace(" ", "_") + "_thumbnail";
             ViewCompat.setTransitionName(holder.thumbnailView, transitionName);
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mListener.onReadItemClick(
-                            getItemId(holder.getAdapterPosition()), holder.thumbnailView);
-                }
-            });
+            if (holder.constraintLayoutArticle != null) {
+                holder.constraintLayoutArticle.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mListener.onReadItemClick(
+                                getItemId(holder.getAdapterPosition()), holder.thumbnailView);
+                    }
+                });
+            } else {
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mListener.onReadItemClick(
+                                getItemId(holder.getAdapterPosition()), holder.thumbnailView);
+                    }
+                });
+            }
         }
 
         @Override
@@ -214,12 +259,14 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        ConstraintLayout constraintLayoutArticle;
         DynamicHeightNetworkImageView thumbnailView;
         TextView titleView;
         TextView subtitleView;
 
         ViewHolder(View view) {
             super(view);
+            constraintLayoutArticle = view.findViewById(R.id.constraint_layout_article);
             thumbnailView = view.findViewById(R.id.thumbnail);
             titleView = view.findViewById(R.id.article_title);
             subtitleView = view.findViewById(R.id.article_subtitle);

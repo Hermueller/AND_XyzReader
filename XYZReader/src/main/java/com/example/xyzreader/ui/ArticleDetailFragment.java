@@ -1,6 +1,6 @@
 package com.example.xyzreader.ui;
 
-import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.content.Intent;
@@ -99,11 +99,13 @@ public class ArticleDetailFragment extends Fragment implements
         }
         setSharedElementReturnTransition(null);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            mItemId = getArguments().getLong(ARG_ITEM_ID);
-        }
-        if (getArguments().containsKey(EXTRA_TRANSITION_NAME)) {
-            mTransitionName = getArguments().getString(EXTRA_TRANSITION_NAME);
+        if (getArguments() != null) {
+            if (getArguments().containsKey(ARG_ITEM_ID)) {
+                mItemId = getArguments().getLong(ARG_ITEM_ID);
+            }
+            if (getArguments().containsKey(EXTRA_TRANSITION_NAME)) {
+                mTransitionName = getArguments().getString(EXTRA_TRANSITION_NAME);
+            }
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
@@ -128,11 +130,10 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-                mRootView.findViewById(R.id.draw_insets_frame_layout);
+        mDrawInsetsFrameLayout = mRootView.findViewById(R.id.draw_insets_frame_layout);
         mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
             @Override
             public void onInsetsChanged(Rect insets) {
